@@ -1,0 +1,39 @@
+name: Tailnet Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant:
+        description: 'Tenant environment to run'
+        required: true
+        default: 'tailnet-t1'
+        type: choice
+        options:
+          - tailnet-t1
+          - tailnet-t2
+  schedule:
+    - cron: '7 * * * *' # Runs hourly at minute :07
+
+jobs:
+  run-node:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.tenant || 'tailnet-t1' }}
+    timeout-minutes: 50
+
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY_EPHEMERAL }}
+          args: --hostname=gh-burner-${{ github.run_id }} --ssh
+
+      - name: Idle Heartbeat Probe
+        run: |
+          tailscale status > /dev/null 2>&1
+          echo "Node online. Holding for connections..."
+          sleep 3000
+
+      - name: Clean Disconnect
+        if: always()
+        run: |
+          tailscale logout
