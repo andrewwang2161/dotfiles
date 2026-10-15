@@ -1,39 +1,41 @@
-name: Tailnet Runner
+name: tailnet-runner
 
 on:
   workflow_dispatch:
     inputs:
       tenant:
-        description: 'Tenant environment to run'
-        required: true
-        default: 'tailnet-t1'
-        type: choice
-        options:
-          - tailnet-t1
-          - tailnet-t2
+        description: "'all' (hourly shape) or one tenant (debug hold)"
+        required: false
+        default: "all"
   schedule:
-    - cron: '7 * * * *' # Runs hourly at minute :07
+    - cron: "7 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tailnet-runner-${{ matrix.tenant }}
+  cancel-in-progress: false
 
 jobs:
-  run-node:
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.tenant || 'tailnet-t1' }}
-    timeout-minutes: 50
-
-    steps:
-      - name: Connect to Tailscale
-        uses: tailscale/github-action@v3
-        with:
-          authkey: ${{ secrets.TS_AUTHKEY_EPHEMERAL }}
-          args: --hostname=gh-burner-${{ github.run_id }} --ssh
-
-      - name: Idle Heartbeat Probe
-        run: |
-          tailscale status > /dev/null 2>&1
-          echo "Node online. Holding for connections..."
-          sleep 3000
-
-      - name: Clean Disconnect
-        if: always()
-        run: |
-          tailscale logout
+  shell:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - tenant: t1
+            offset: "0"
+          - tenant: t2
+            offset: "180"
+    if: github.event_name == 'schedule' || inputs.tenant == 'all' || inputs.tenant == matrix.tenant
+    environment: tailnet-${{ matrix.tenant }}
+    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@af90adb6db8de76dd9b8ebb50d76ec8c08f0e355
+    with:
+      mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
+      hostname-prefix: gh-${{ matrix.tenant }}
+      box-name: box
+      edge-url: https://box.treau.me/
+      quiet: "true"
+      startup-delay-seconds: ${{ matrix.offset }}
+    secrets:
+      TS_AUTHKEY_EPHEMERAL: ${{ secrets.TS_AUTHKEY_EPHEMERAL }}
