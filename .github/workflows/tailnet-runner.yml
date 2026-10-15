@@ -2,7 +2,7 @@
 # one repo fans out N tenants — one calling job per tenant. No fleet of
 # accounts.
 # Paste as `.github/workflows/tailnet-runner.yml`, then:
-#   1. Replace f1edc2fc86ff1d54dcc9d885144a18656469b317 with the reviewed treaulab/infra commit SHA
+#   1. Replace 247f5b7f8a697798fd3b4004a8edb87dfc34fed3 with the reviewed treaulab/infra commit SHA
 #      (gh api repos/treaulab/infra/commits/main --jq .sha).
 #   2. Preferred (zero secrets, zero rotation): Tailscale admin → Trust
 #      credentials → OIDC federated identity (issuer
@@ -31,7 +31,7 @@
 #   - OIDC needs `id-token: write` on each calling job (else token exchange fails).
 #
 # Dispatch: Run workflow → tenant=all (hourly shape) or one tenant (debug).
-# Debug holds default 60 min; pass hold-minutes up to 330 for long sessions.
+# Debug holds default 90 min; pass hold-minutes up to 330 for long sessions.
 
 name: tailnet-runner
 
@@ -43,9 +43,9 @@ on:
         required: false
         default: "all"
       hold-minutes:
-        description: "Debug hold length in minutes (1-330, default 60; schedule ignores this)"
+        description: "Debug hold length in minutes (1-330, default 90; schedule ignores this)"
         required: false
-        default: "60"
+        default: "90"
   schedule:
     - cron: "7 * * * *"
 
@@ -61,7 +61,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@f1edc2fc86ff1d54dcc9d885144a18656469b317
+    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@247f5b7f8a697798fd3b4004a8edb87dfc34fed3
     with:
       mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
       hostname-prefix: gh-t1
@@ -69,7 +69,7 @@ jobs:
       edge-url: https://box.treau.me/
       quiet: "true"
       startup-delay-seconds: "0"
-      hold-minutes: ${{ inputs.hold-minutes || '60' }}
+      hold-minutes: ${{ inputs.hold-minutes || '90' }}
       tag: tag:ci-ephemeral
       ts-oidc-client-id: ${{ vars.TS_OIDC_CLIENT_ID }}
       ts-audience: ${{ vars.TS_AUDIENCE }}
@@ -86,7 +86,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@f1edc2fc86ff1d54dcc9d885144a18656469b317
+    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@247f5b7f8a697798fd3b4004a8edb87dfc34fed3
     with:
       mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
       hostname-prefix: gh-t2
@@ -94,7 +94,7 @@ jobs:
       edge-url: https://box.treau.me/
       quiet: "true"
       startup-delay-seconds: "180"
-      hold-minutes: ${{ inputs.hold-minutes || '60' }}
+      hold-minutes: ${{ inputs.hold-minutes || '90' }}
       tag: tag:ci-ephemeral
       ts-oidc-client-id: ${{ vars.TS_OIDC_CLIENT_ID }}
       ts-audience: ${{ vars.TS_AUDIENCE }}
