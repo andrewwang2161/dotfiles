@@ -13,29 +13,37 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: tailnet-runner-${{ matrix.tenant }}
-  cancel-in-progress: false
-
 jobs:
-  shell:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - tenant: t1
-            offset: "0"
-          - tenant: t2
-            offset: "180"
-    if: github.event_name == 'schedule' || inputs.tenant == 'all' || inputs.tenant == matrix.tenant
-    environment: tailnet-${{ matrix.tenant }}
+  t1:
+    if: github.event_name == 'schedule' || inputs.tenant == 'all' || inputs.tenant == 't1'
+    environment: tailnet-t1
+    concurrency:
+      group: tailnet-runner-t1
+      cancel-in-progress: false
     uses: treaulab/infra/.github/workflows/tailnet-runner.yml@af90adb6db8de76dd9b8ebb50d76ec8c08f0e355
     with:
       mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
-      hostname-prefix: gh-${{ matrix.tenant }}
+      hostname-prefix: gh-t1
       box-name: box
       edge-url: https://box.treau.me/
       quiet: "true"
-      startup-delay-seconds: ${{ matrix.offset }}
+      startup-delay-seconds: "0"
+    secrets:
+      TS_AUTHKEY_EPHEMERAL: ${{ secrets.TS_AUTHKEY_EPHEMERAL }}
+
+  t2:
+    if: github.event_name == 'schedule' || inputs.tenant == 'all' || inputs.tenant == 't2'
+    environment: tailnet-t2
+    concurrency:
+      group: tailnet-runner-t2
+      cancel-in-progress: false
+    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@af90adb6db8de76dd9b8ebb50d76ec8c08f0e355
+    with:
+      mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
+      hostname-prefix: gh-t2
+      box-name: box
+      edge-url: https://box.treau.me/
+      quiet: "true"
+      startup-delay-seconds: "180"
     secrets:
       TS_AUTHKEY_EPHEMERAL: ${{ secrets.TS_AUTHKEY_EPHEMERAL }}
