@@ -2,7 +2,7 @@
 # one repo fans out N tenants — one calling job per tenant. No fleet of
 # accounts.
 # Paste as `.github/workflows/tailnet-runner.yml`, then:
-#   1. Replace 493398eb00f140b90b3487dbe1fb0a5ddbfc01b5 with the reviewed treaulab/infra commit SHA
+#   1. Replace 105ecd345f5e65884b5c2fbd5debd16fb66f089c with the reviewed treaulab/infra commit SHA
 #      (gh api repos/treaulab/infra/commits/main --jq .sha).
 #   2. Preferred (zero secrets, zero rotation): Tailscale admin → Trust
 #      credentials → OIDC federated identity (issuer
@@ -56,7 +56,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@493398eb00f140b90b3487dbe1fb0a5ddbfc01b5
+    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@105ecd345f5e65884b5c2fbd5debd16fb66f089c
     with:
       mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
       hostname-prefix: gh-t1
@@ -80,7 +80,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@493398eb00f140b90b3487dbe1fb0a5ddbfc01b5
+    uses: treaulab/infra/.github/workflows/tailnet-runner.yml@105ecd345f5e65884b5c2fbd5debd16fb66f089c
     with:
       mode: ${{ github.event_name == 'schedule' && 'hourly' || 'debug' }}
       hostname-prefix: gh-t2
