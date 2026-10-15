@@ -1,0 +1,18 @@
+# andrewwang2161's shared git defaults.
+# NOTE: no user.name / user.email here — identity is set per-machine,
+# never shipped in dotfiles.
+[core]
+  editor = vim
+  excludesfile = ~/.gitignore_global
+[color]
+  ui = auto
+[push]
+  default = simple
+[pull]
+  rebase = false
+[alias]
+  st = status --short
+  co = checkout
+  br = branch
+  lg = log --oneline -15
+  unstage = reset HEAD --
