@@ -13,10 +13,15 @@ on:
 permissions:
   contents: read
 
+# One calling job per tenant. Reusable-call jobs accept ONLY: name, uses,
+# with, secrets, needs, if, permissions — no strategy/matrix, no
+# environment, no runs-on. Per-tenant keys are distinct repo-level secrets
+# (TS_AUTHKEY_<TENANT>); pilot t1/t2 share TS_AUTHKEY_EPHEMERAL until the
+# tenant trio in tofu/tailnet/tenants.tf.example mints distinct keys.
+
 jobs:
   t1:
     if: github.event_name == 'schedule' || inputs.tenant == 'all' || inputs.tenant == 't1'
-    environment: tailnet-t1
     concurrency:
       group: tailnet-runner-t1
       cancel-in-progress: false
@@ -33,7 +38,6 @@ jobs:
 
   t2:
     if: github.event_name == 'schedule' || inputs.tenant == 'all' || inputs.tenant == 't2'
-    environment: tailnet-t2
     concurrency:
       group: tailnet-runner-t2
       cancel-in-progress: false
